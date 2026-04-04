@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI HR Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a24;
+    --border: #2a2a38; --accent: #7c6cff; --accent2: #ff6cb0;
+    --accent3: #4cffd6; --text: #e8e8f0; --muted: #7878a0;
+    --danger: #ff5f7e; --radius: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  .app { display: flex; height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { width: 250px; min-width: 250px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+  .logo { padding: 26px 20px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 19px; background: linear-gradient(90deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  nav { flex: 1; padding: 14px 10px; }
+  .nav-section { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; padding: 10px 12px 5px; font-family: 'Syne', sans-serif; }
+  .nav-btn { display: flex; align-items: center; gap: 11px; width: 100%; padding: 10px 13px; border-radius: 9px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; text-align: left; margin-bottom: 2px; }
+  .nav-btn:hover { background: var(--surface2); color: var(--text); }
+  .nav-btn.active { background: linear-gradient(135deg, rgba(124,108,255,0.18), rgba(255,108,176,0.08)); color: var(--text); border: 1px solid rgba(124,108,255,0.25); }
+  .nav-btn.active .nav-icon { color: var(--accent); }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* Main */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 18px 28px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+  .page-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -0.3px; }
+  .stat-chip { display: flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--muted); }
+  .stat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent3); box-shadow: 0 0 6px var(--accent3); }
+  .content { flex: 1; overflow-y: auto; padding: 28px; }
+
+  /* Forms */
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 11px; font-weight: 500; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .input, .select, textarea { width: 100%; padding: 10px 13px; background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+  .input:focus, .select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,108,255,0.15); }
+  .select { appearance: none; cursor: pointer; }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 18px; border-radius: 9px; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #6456e8); color: #fff; box-shadow: 0 4px 14px rgba(124,108,255,0.3); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(124,108,255,0.4); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: rgba(255,95,126,0.12); color: var(--danger); border: 1px solid rgba(255,95,126,0.25); }
+  .btn-danger:hover { background: rgba(255,95,126,0.22); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+  /* Upload */
+  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.18s; background: var(--surface2); position: relative; }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(124,108,255,0.06); }
+  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 38px; margin-bottom: 10px; display: block; }
+  .upload-text { font-size: 15px; font-weight: 500; margin-bottom: 5px; }
+  .upload-sub { font-size: 12px; color: var(--muted); }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; transition: border-color 0.15s; }
+  .card:hover { border-color: rgba(124,108,255,0.3); }
+  .candidate-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .candidate-role { font-size: 13px; color: var(--muted); }
+  .score-badge { background: linear-gradient(135deg, rgba(124,108,255,0.2), rgba(76,255,214,0.1)); border: 1px solid rgba(124,108,255,0.3); border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+  .meta-chip { display: flex; align-items: center; gap: 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 9px; font-size: 12px; color: var(--muted); }
+  .skills-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .skill-tag { background: rgba(124,108,255,0.12); border: 1px solid rgba(124,108,255,0.25); color: var(--accent); border-radius: 6px; padding: 2px 9px; font-size: 12px; font-weight: 500; }
+  .match-excerpt { background: var(--surface2); border-left: 2px solid var(--accent); padding: 7px 11px; border-radius: 0 6px 6px 0; font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* Dashboard stats */
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 5px; background: linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat-label { font-size: 12px; color: var(--muted); }
+
+  /* Search */
+  .search-row { display: flex; gap: 10px; margin-bottom: 16px; align-items: flex-end; }
+  .search-row .form-group { flex: 1; margin: 0; }
+  .filters-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+
+  /* QA */
+  .qa-answer { background: linear-gradient(135deg, rgba(124,108,255,0.08), rgba(76,255,214,0.04)); border: 1px solid rgba(124,108,255,0.25); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; }
+  .qa-label { font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .qa-text { font-size: 14px; line-height: 1.7; }
+  .citation-item { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--accent3); border-radius: 8px; padding: 9px 13px; margin-bottom: 7px; }
+  .citation-name { font-weight: 600; font-size: 13px; color: var(--accent3); margin-bottom: 3px; }
+  .citation-text { color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+  /* Progress */
+  .progress-wrap { background: var(--surface2); border-radius: 999px; height: 4px; overflow: hidden; margin-top: 10px; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Toast */
+  .toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 7px; z-index: 999; }
+  .toast { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 11px 16px; font-size: 13px; display: flex; align-items: center; gap: 9px; animation: slideIn 0.25s ease; max-width: 320px; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
+  .toast.success { border-color: rgba(76,255,214,0.4); }
+  .toast.error { border-color: rgba(255,95,126,0.4); }
+
+  .spinner { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  .empty { text-align: center; padding: 50px 20px; color: var(--muted); }
+  .empty-icon { font-size: 42px; margin-bottom: 12px; opacity: 0.45; }
+  .empty-text { font-size: 14px; }
+
+  .section-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .candidates-grid { display: grid; gap: 12px; }
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .results-count { font-size: 12px; color: var(--muted); }
+  .ingest-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .file-item { display:flex; align-items:center; gap:10px; padding:9px 12px; background:var(--surface2); border-radius:8px; margin-bottom:6px; font-size:13px; }
+  .file-item-icon { font-size:18px; flex-shrink:0; }
+  .file-item-name { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .file-item-size { color:var(--muted); font-size:12px; flex-shrink:0; }
+  .file-item-status { font-size:12px; color:var(--muted); flex-shrink:0; min-width:80px; text-align:right; }
+  .hidden { display: none !important; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🧠</div>
+      <div class="logo-text">AI</div>
+    </div>
+    <nav>
+      <div class="nav-section">Main</div>
+      <button class="nav-btn active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</button>
+      <button class="nav-btn" onclick="showPage('ingest')" id="nav-ingest"><span class="nav-icon">📤</span> Upload CVs</button>
+      <button class="nav-btn" onclick="showPage('search')" id="nav-search"><span class="nav-icon">🔍</span> Semantic Search</button>
+      <button class="nav-btn" onclick="showPage('qa')" id="nav-qa"><span class="nav-icon">💬</span> Ask AI</button>
+      <div class="nav-section">Data</div>
+      <button class="nav-btn" onclick="showPage('candidates')" id="nav-candidates"><span class="nav-icon">👥</span> All Candidates</button>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="stat-chip"><div class="stat-dot"></div><span id="top-count">0 candidates</span></div>
+    </div>
+
+    <div class="content">
+
+      <!-- Dashboard -->
+      <div id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-value" id="stat-candidates">0</div><div class="stat-label">Total Candidates</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-vectors">0</div><div class="stat-label">Knowledge Vectors</div></div>
+          <div class="stat-card"><div class="stat-value">v1.0</div><div class="stat-label">System Version</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+          <div>
+            <div class="section-title">Quick Actions</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <button class="btn btn-primary" onclick="showPage('ingest')">📤 &nbsp;Upload a CV</button>
+              <button class="btn btn-secondary" onclick="showPage('search')">🔍 &nbsp;Search Candidates</button>
+              <button class="btn btn-secondary" onclick="showPage('qa')">💬 &nbsp;Ask the AI</button>
+            </div>
+          </div>
+          <div>
+            <div class="section-title">How it Works</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div class="card" style="padding:13px"><div style="font-size:13px;line-height:1.6;color:var(--muted)"><div style="color:var(--text);font-weight:600;margin-bottom:5px">1. Upload CVs 📤</div>PDFs and TXT files are parsed by AI and embedded into a vector store.</div></div>
+              <div class="card" style="padding:13px"><div style="font-size:13px;line-height:1.6;color:var(--muted)"><div style="color:var(--text);font-weight:600;margin-bottom:5px">2. Search Semantically 🔍</div>Paste a job description to find the most relevant candidates.</div></div>
+              <div class="card" style="padding:13px"><div style="font-size:13px;line-height:1.6;color:var(--muted)"><div style="color:var(--text);font-weight:600;margin-bottom:5px">3. Ask Anything 💬</div>Ask natural language questions grounded in CV data.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ingest -->
+      <div id="page-ingest" class="hidden">
+        <div class="section-title">Upload CVs</div>
+        <div class="ingest-layout">
+          <div>
+            <div class="upload-zone" id="drop-zone">
+              <input type="file" accept=".pdf,.txt" multiple onchange="handleFileSelect(event)" id="file-input"/>
+              <span class="upload-icon">📄</span>
+              <div class="upload-text">Drop CVs here or click to browse</div>
+              <div class="upload-sub">PDF and TXT · Max 10MB each · Up to 20 files at once</div>
+            </div>
+            <div id="file-queue" class="hidden" style="margin-top:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="font-size:13px;font-weight:500" id="queue-label">0 files selected</div>
+                <button class="btn btn-primary" onclick="uploadAll()" id="upload-btn" style="padding:7px 14px;font-size:13px">Upload All</button>
+              </div>
+              <div id="file-list"></div>
+            </div>
+            <div id="upload-result" style="margin-top:14px"></div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:12px">What gets extracted</div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--muted)">
+              <div>✓ &nbsp;Full name &amp; contact info</div>
+              <div>✓ &nbsp;Years of experience</div>
+              <div>✓ &nbsp;Seniority level</div>
+              <div>✓ &nbsp;Current or target role</div>
+              <div>✓ &nbsp;Key skills list</div>
+              <div>✓ &nbsp;Location</div>
+              <div>✓ &nbsp;Semantic chunks for search</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div id="page-search" class="hidden">
+        <div class="section-title">Semantic Search</div>
+        <div class="search-row">
+          <div class="form-group">
+            <label class="form-label">Job Description or Query</label>
+            <input class="input" id="search-query" placeholder="e.g. Senior Python developer with AWS and Kubernetes experience..."/>
+          </div>
+          <button class="btn btn-primary" onclick="doSearch()" id="search-btn">Search</button>
+        </div>
+        <div class="filters-row">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Seniority</label>
+            <select class="select" id="filter-seniority">
+              <option value="">Any</option>
+              <option>junior</option><option>mid</option><option>senior</option><option>lead</option><option>principal</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Location</label>
+            <input class="input" id="filter-location" placeholder="e.g. Cairo"/>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Role</label>
+            <input class="input" id="filter-role" placeholder="e.g. Backend Engineer"/>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:14px;font-weight:500">Results</div>
+          <div class="results-count" id="search-count"></div>
+        </div>
+        <div id="search-results">
+          <div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Enter a query to find candidates</div></div>
+        </div>
+      </div>
+
+      <!-- Q&A -->
+      <div id="page-qa" class="hidden">
+        <div class="section-title">Ask AI About Candidates</div>
+        <div style="max-width:660px">
+          <div class="form-group">
+            <label class="form-label">Your Question</label>
+            <textarea class="input" id="qa-question" rows="3" placeholder="e.g. Which candidates have machine learning experience? Who is the most senior engineer?"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="doQA()" id="qa-btn">Ask AI →</button>
+        </div>
+        <div id="qa-result" class="hidden" style="margin-top:22px;max-width:760px">
+          <div class="qa-answer">
+            <div class="qa-label">✦ AI Answer</div>
+            <div class="qa-text" id="qa-answer-text"></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:9px">Sources</div>
+            <div id="qa-citations"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Candidates -->
+      <div id="page-candidates" class="hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div class="section-title" style="margin:0">All Candidates</div>
+          <button class="btn btn-secondary" onclick="loadCandidates()" style="font-size:12px;padding:7px 13px">↻ Refresh</button>
+        </div>
+        <div id="candidates-list">
+          <div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+const API = '';  // same origin — no hardcoded host needed
+let recentUploads = JSON.parse(localStorage.getItem('hr_recent') || '[]');
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  loadDashboard();
+  setupDrag();
+});
+
+function setupDrag() {
+  const zone = document.getElementById('drop-zone');
+  ['dragenter','dragover'].forEach(e => zone.addEventListener(e, ev => { ev.preventDefault(); zone.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(e => zone.addEventListener(e, ev => { ev.preventDefault(); zone.classList.remove('dragover'); }));
+  zone.addEventListener('drop', ev => {
+    selectedFiles = Array.from(ev.dataTransfer.files).filter(f => ['pdf','txt'].includes(f.name.split('.').pop().toLowerCase()));
+    renderFileQueue();
+  });
+}
+
+// ─── Navigation ───────────────────────────────────────────────────────────────
+const pages  = ['dashboard','ingest','search','qa','candidates'];
+const titles = { dashboard:'Dashboard', ingest:'Upload CVs', search:'Semantic Search', qa:'Ask AI', candidates:'All Candidates' };
+
+function showPage(name) {
+  pages.forEach(p => {
+    document.getElementById('page-'  + p).classList.toggle('hidden', p !== name);
+    document.getElementById('nav-'   + p).classList.toggle('active', p === name);
+  });
+  document.getElementById('page-title').textContent = titles[name];
+  if (name === 'candidates') loadCandidates();
+  if (name === 'dashboard')  loadDashboard();
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const r = await apiFetch('/health');
+    document.getElementById('stat-candidates').textContent = r.candidates || 0;
+    document.getElementById('stat-vectors').textContent    = r.vectors    || 0;
+    document.getElementById('top-count').textContent       = (r.candidates || 0) + ' candidates';
+  } catch(_) {}
+}
+
+// ─── Upload ───────────────────────────────────────────────────────────────────
+let selectedFiles = [];
+
+function handleFileSelect(e) {
+  selectedFiles = Array.from(e.target.files);
+  renderFileQueue();
+}
+
+function renderFileQueue() {
+  const queue = document.getElementById('file-queue');
+  const list  = document.getElementById('file-list');
+  const label = document.getElementById('queue-label');
+
+  if (!selectedFiles.length) { queue.classList.add('hidden'); return; }
+  queue.classList.remove('hidden');
+  label.textContent = selectedFiles.length + ' file' + (selectedFiles.length > 1 ? 's' : '') + ' selected';
+
+  list.innerHTML = selectedFiles.map((f, i) => `
+    <div class="file-item" id="file-item-${i}">
+      <span class="file-item-icon">${f.name.endsWith('.pdf') ? '📕' : '📄'}</span>
+      <span class="file-item-name">${f.name}</span>
+      <span class="file-item-size">${(f.size/1024).toFixed(0)} KB</span>
+      <span class="file-item-status" id="file-status-${i}">Pending</span>
+    </div>`).join('');
+}
+
+async function uploadAll() {
+  if (!selectedFiles.length) return;
+  const btn = document.getElementById('upload-btn');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Uploading…';
+
+  // Mark all as uploading
+  selectedFiles.forEach((_, i) => {
+    const s = document.getElementById('file-status-' + i);
+    if (s) { s.textContent = '⏳ Processing…'; s.style.color = 'var(--muted)'; }
+  });
+
+  try {
+    const fd = new FormData();
+    selectedFiles.forEach(f => fd.append('files', f));
+
+    const r = await fetch(API + '/ingest', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Upload failed');
+
+    // Update per-file statuses
+    (d.succeeded || []).forEach(res => {
+      const idx = selectedFiles.findIndex(f => f.name === res.filename);
+      if (idx >= 0) {
+        const s = document.getElementById('file-status-' + idx);
+        if (s) { s.textContent = '✓ Done · ' + res.chunks + ' chunks'; s.style.color = 'var(--accent3)'; }
+      }
+    });
+    (d.failed || []).forEach(res => {
+      const idx = selectedFiles.findIndex(f => f.name === res.filename);
+      if (idx >= 0) {
+        const s = document.getElementById('file-status-' + idx);
+        if (s) { s.textContent = '⚠ ' + res.error; s.style.color = 'var(--danger)'; }
+      }
+    });
+
+    // Show results
+    const resultEl = document.getElementById('upload-result');
+    if (d.succeeded && d.succeeded.length) {
+      resultEl.innerHTML = `
+        <div style="margin-bottom:12px;font-size:13px;color:var(--accent3);font-weight:500">
+          ✓ ${d.succeeded.length} CV${d.succeeded.length>1?'s':''} ingested successfully
+          ${d.failed.length ? ` · <span style="color:var(--danger)">${d.failed.length} failed</span>` : ''}
+        </div>
+        <div class="candidates-grid">${d.succeeded.map(r => renderCard(r.metadata, null, r.chunks)).join('')}</div>`;
+    } else {
+      resultEl.innerHTML = `<div class="card" style="border-color:rgba(255,95,126,0.4)"><span style="color:var(--danger)">⚠ All files failed to process</span></div>`;
+    }
+
+    toast(d.message, d.succeeded.length ? 'success' : 'error');
+    loadDashboard();
+  } catch(e) {
+    document.getElementById('upload-result').innerHTML = `<div class="card" style="border-color:rgba(255,95,126,0.4)"><span style="color:var(--danger)">⚠ ${e.message}</span></div>`;
+    toast(e.message, 'error');
+  }
+
+  btn.disabled = false; btn.textContent = 'Upload All';
+  document.getElementById('file-input').value = '';
+  selectedFiles = [];
+}
+
+// ─── Search ───────────────────────────────────────────────────────────────────
+async function doSearch() {
+  const query = document.getElementById('search-query').value.trim();
+  if (!query) return toast('Enter a search query', 'error');
+  const btn = document.getElementById('search-btn');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
+
+  const body = {
+    query, top_k: 10,
+    seniority: document.getElementById('filter-seniority').value || undefined,
+    location:  document.getElementById('filter-location').value  || undefined,
+    role:      document.getElementById('filter-role').value      || undefined,
+  };
+  Object.keys(body).forEach(k => body[k] === undefined && delete body[k]);
+
+  try {
+    const d = await apiFetch('/search', 'POST', body);
+    document.getElementById('search-count').textContent = d.total + ' result' + (d.total !== 1 ? 's' : '');
+    const el = document.getElementById('search-results');
+    el.innerHTML = d.results.length
+      ? `<div class="candidates-grid">${d.results.map(r => renderCard(r.candidate, r.score, null, r.matched_text)).join('')}</div>`
+      : '<div class="empty"><div class="empty-icon">🔎</div><div class="empty-text">No candidates matched</div></div>';
+  } catch(e) { toast(e.message, 'error'); }
+  btn.disabled = false; btn.textContent = 'Search';
+}
+
+// ─── Q&A ──────────────────────────────────────────────────────────────────────
+async function doQA() {
+  const q = document.getElementById('qa-question').value.trim();
+  if (!q) return toast('Enter a question', 'error');
+  const btn = document.getElementById('qa-btn');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Thinking…';
+  document.getElementById('qa-result').classList.add('hidden');
+
+  try {
+    const d = await apiFetch('/qa', 'POST', { question: q, top_k: 5 });
+    document.getElementById('qa-answer-text').textContent = d.answer;
+    document.getElementById('qa-citations').innerHTML = (d.citations || []).map(c => `
+      <div class="citation-item">
+        <div class="citation-name">👤 ${c.candidate_name || 'Unknown'}</div>
+        <div class="citation-text">${c.excerpt}</div>
+      </div>`).join('');
+    document.getElementById('qa-result').classList.remove('hidden');
+  } catch(e) { toast(e.message, 'error'); }
+  btn.disabled = false; btn.textContent = 'Ask AI →';
+}
+
+// ─── Candidates ───────────────────────────────────────────────────────────────
+async function loadCandidates() {
+  const el = document.getElementById('candidates-list');
+  try {
+    const d = await apiFetch('/candidates');
+    el.innerHTML = d.candidates.length
+      ? `<div class="candidates-grid">${d.candidates.map(c => renderCard(c, null, null, null, true)).join('')}</div>`
+      : '<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">No candidates yet. Upload CVs to get started.</div></div>';
+  } catch(e) { el.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">${e.message}</div></div>`; }
+}
+
+async function deleteCandidate(id, btn) {
+  if (!confirm('Delete this candidate?')) return;
+  try {
+    await apiFetch(`/candidates/${id}`, 'DELETE');
+    btn.closest('.card').remove();
+    toast('Candidate deleted', 'success');
+    loadDashboard();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ─── Card ─────────────────────────────────────────────────────────────────────
+function renderCard(c, score, chunks, excerpt, showDelete) {
+  const skills = Array.isArray(c.skills) ? c.skills : (c.skills||'').split(',').filter(Boolean);
+  return `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="candidate-name">${c.name || '(Name not found)'}</div>
+          <div class="candidate-role">${c.role || '—'}</div>
+        </div>
+        <div style="display:flex;gap:7px;align-items:center;flex-shrink:0">
+          ${score != null ? `<div class="score-badge">⚡ ${(score*100).toFixed(0)}%</div>` : ''}
+          ${chunks   ? `<div class="meta-chip">📦 ${chunks} chunks</div>` : ''}
+          ${showDelete ? `<button class="btn btn-danger" style="padding:4px 9px;font-size:12px" onclick="deleteCandidate('${c.id}',this)">Delete</button>` : ''}
+        </div>
+      </div>
+      <div class="meta-row">
+        ${c.email             ? `<div class="meta-chip">✉ ${c.email}</div>` : ''}
+        ${c.location          ? `<div class="meta-chip">📍 ${c.location}</div>` : ''}
+        ${c.years_experience  ? `<div class="meta-chip">⏱ ${c.years_experience} yrs</div>` : ''}
+        ${c.seniority         ? `<div class="meta-chip">🎯 ${c.seniority}</div>` : ''}
+        ${c.phone             ? `<div class="meta-chip">📞 ${c.phone}</div>` : ''}
+      </div>
+      ${skills.length ? `<div class="skills-row">${skills.slice(0,8).map(s=>`<span class="skill-tag">${s.trim()}</span>`).join('')}${skills.length>8?`<span class="meta-chip">+${skills.length-8}</span>`:''}</div>` : ''}
+      ${excerpt ? `<div class="match-excerpt">${excerpt}</div>` : ''}
+    </div>`;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+async function apiFetch(path, method = 'GET', body = null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + path, opts);
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.detail || 'Request failed');
+  return d;
+}
+
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${type === 'success' ? '✓' : '⚠'}</span> ${msg}`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.id === 'search-query') doSearch();
+});
+</script>
+</body>
+</html>
